@@ -114,8 +114,15 @@ export function ContactStep({
         if (answersError) throw answersError
       }
 
-      // Redirect to confirmation
+      // Send confirmation emails (fire-and-forget)
       const bookingId = (booking as { id: string })?.id
+      fetch('/api/email/send-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId }),
+      }).catch(err => console.error('Email send error:', err))
+
+      // Redirect to confirmation
       router.push(`/book/${business.slug}/confirmation?booking=${bookingId}`)
     } catch (err: unknown) {
       console.error('Booking error:', err)

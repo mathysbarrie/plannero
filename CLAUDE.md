@@ -89,6 +89,19 @@ This ensures no double bookings even with concurrent requests.
   - Buffer time between appointments
   - Minimum notice hours
 
+- `POST /api/email/send-confirmation` - Sends booking confirmation emails (client + business owner)
+- `GET /api/cron/send-reminders` - Cron endpoint for 24h reminder emails (Vercel Cron)
+
+### Email Notifications
+
+Uses **Resend** with React Email templates in `src/lib/email/`:
+- `client.ts` - Resend client initialization
+- `templates/booking-confirmation.tsx` - Client confirmation email
+- `templates/booking-notification.tsx` - Business owner notification
+- `templates/booking-reminder.tsx` - 24h reminder email
+
+Emails are sent fire-and-forget after booking creation. Cron runs daily at 8am (configurable in `vercel.json`).
+
 ### Public Booking Flow
 
 The multi-step booking wizard at `/book/[slug]` follows this flow:
@@ -113,6 +126,18 @@ State is managed via URL query params for shareable/bookmarkable progress.
 
 Required in `.env.local`:
 ```
+# Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=xxx
+SUPABASE_SERVICE_ROLE_KEY=xxx  # For admin operations (email sender)
+
+# Email (Resend)
+RESEND_API_KEY=re_xxx
+EMAIL_FROM=onboarding@resend.dev  # Use your domain in production
+
+# Cron
+CRON_SECRET=xxx  # Random secret for cron endpoint auth
+
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000  # For email links
 ```
