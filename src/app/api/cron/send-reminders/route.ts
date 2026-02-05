@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { resend, EMAIL_FROM, isEmailConfigured } from '@/lib/email/client'
-import { BookingReminderEmail } from '@/lib/email/templates/booking-reminder'
+import { bookingReminderHtml } from '@/lib/email/templates'
 
 // Lazy init to avoid build errors
 function getSupabaseAdmin() {
@@ -64,20 +64,22 @@ export async function GET(request: NextRequest) {
     // Send reminders
     const results = await Promise.allSettled(
       bookings.map(async (booking) => {
+        const emailHtml = bookingReminderHtml({
+          clientName: booking.client_name,
+          businessName: booking.business.name,
+          businessLogo: booking.business.logo_url,
+          serviceName: booking.service.name,
+          date: formattedDate,
+          time: booking.time,
+          duration: booking.duration,
+          primaryColor: booking.business.primary_color,
+        })
+
         const result = await resend.emails.send({
           from: EMAIL_FROM,
           to: booking.client_email,
           subject: `Rappel : Votre rendez-vous demain - ${booking.business.name}`,
-          react: BookingReminderEmail({
-            clientName: booking.client_name,
-            businessName: booking.business.name,
-            businessLogo: booking.business.logo_url,
-            serviceName: booking.service.name,
-            date: formattedDate,
-            time: booking.time,
-            duration: booking.duration,
-            primaryColor: booking.business.primary_color,
-          }),
+          html: emailHtml,
         })
         return { bookingId: booking.id, result }
       })

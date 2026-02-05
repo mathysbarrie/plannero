@@ -1,4 +1,5 @@
 import type { Service, Option } from '@/types/database.types'
+import type { BookingTheme } from '@/lib/booking-theme'
 import { Calendar, Clock, CheckCircle } from 'lucide-react'
 
 interface BookingSummaryProps {
@@ -7,9 +8,11 @@ interface BookingSummaryProps {
   time: string | null
   options: Option[]
   total: number
+  cardClasses?: string
+  theme?: BookingTheme
 }
 
-export function BookingSummary({ service, date, time, options, total }: BookingSummaryProps) {
+export function BookingSummary({ service, date, time, options, total, cardClasses, theme }: BookingSummaryProps) {
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr)
     return d.toLocaleDateString('fr-FR', {
@@ -26,30 +29,43 @@ export function BookingSummary({ service, date, time, options, total }: BookingS
     return mins ? `${hours}h${mins}` : `${hours}h`
   }
 
+  const accentColor = theme?.colors.accent || '#171717'
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-6">
-      <h3 className="font-semibold text-gray-900 mb-4">Récapitulatif</h3>
+    <div
+      className={`p-6 sticky top-6 ${cardClasses || 'border border-neutral-200 bg-white'}`}
+      style={{ backgroundColor: 'var(--booking-card-background, white)' }}
+    >
+      <h3
+        className="text-[11px] font-bold uppercase tracking-[0.2em] mb-6"
+        style={{
+          color: 'var(--booking-text-secondary, #737373)',
+          fontFamily: 'var(--booking-font-heading, inherit)',
+        }}
+      >
+        Récapitulatif
+      </h3>
 
       {service ? (
         <div className="space-y-4">
           {/* Service */}
           <div className="flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
+            <CheckCircle className="w-4 h-4 mt-0.5" style={{ color: accentColor }} />
             <div className="flex-1">
-              <p className="font-medium text-gray-900">{service.name}</p>
-              <p className="text-sm text-gray-500">{formatDuration(service.duration)}</p>
+              <p className="text-[13px] font-medium" style={{ color: 'var(--booking-text, #171717)' }}>{service.name}</p>
+              <p className="text-[11px]" style={{ color: 'var(--booking-text-secondary, #737373)' }}>{formatDuration(service.duration)}</p>
             </div>
-            <p className="font-medium text-gray-900">{Number(service.price).toFixed(2)} €</p>
+            <p className="text-[13px] font-medium tabular-nums" style={{ color: 'var(--booking-text, #171717)' }}>{Number(service.price).toFixed(2)} €</p>
           </div>
 
           {/* Date & Time */}
           {date && time && (
             <div className="flex items-start gap-3">
-              <Calendar className="w-5 h-5 text-blue-500 mt-0.5" />
+              <Calendar className="w-4 h-4 mt-0.5" style={{ color: accentColor }} />
               <div className="flex-1">
-                <p className="font-medium text-gray-900 capitalize">{formatDate(date)}</p>
-                <div className="flex items-center gap-1 text-sm text-gray-500">
-                  <Clock className="w-3.5 h-3.5" />
+                <p className="text-[13px] font-medium capitalize" style={{ color: 'var(--booking-text, #171717)' }}>{formatDate(date)}</p>
+                <div className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--booking-text-secondary, #737373)' }}>
+                  <Clock className="w-3 h-3" />
                   {time}
                 </div>
               </div>
@@ -58,27 +74,27 @@ export function BookingSummary({ service, date, time, options, total }: BookingS
 
           {/* Options */}
           {options.length > 0 && (
-            <div className="border-t pt-4 space-y-2">
-              <p className="text-sm font-medium text-gray-500">Options</p>
+            <div className="border-t border-neutral-100 pt-4 space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--booking-text-secondary, #737373)' }}>Options</p>
               {options.map(option => (
-                <div key={option.id} className="flex justify-between text-sm">
-                  <span className="text-gray-700">{option.name}</span>
-                  <span className="text-gray-900">+{Number(option.price).toFixed(2)} €</span>
+                <div key={option.id} className="flex justify-between text-[12px]">
+                  <span style={{ color: 'var(--booking-text, #171717)' }}>{option.name}</span>
+                  <span className="tabular-nums" style={{ color: 'var(--booking-text, #171717)' }}>+{Number(option.price).toFixed(2)} €</span>
                 </div>
               ))}
             </div>
           )}
 
           {/* Total */}
-          <div className="border-t pt-4 mt-4">
+          <div className="border-t border-neutral-200 pt-4 mt-4">
             <div className="flex justify-between items-center">
-              <span className="font-semibold text-gray-900">Total</span>
-              <span className="text-xl font-bold text-gray-900">{total.toFixed(2)} €</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: 'var(--booking-text-secondary, #737373)' }}>Total</span>
+              <span className="text-xl font-light tracking-tight tabular-nums" style={{ color: 'var(--booking-text, #171717)' }}>{total.toFixed(2)} €</span>
             </div>
           </div>
         </div>
       ) : (
-        <p className="text-sm text-gray-500">Sélectionnez un service pour commencer</p>
+        <p className="text-[12px]" style={{ color: 'var(--booking-text-secondary, #737373)' }}>Sélectionnez un service pour commencer</p>
       )}
     </div>
   )

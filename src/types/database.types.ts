@@ -23,6 +23,36 @@ export interface Database {
           slot_duration_minutes: number
           created_at: string
           updated_at: string
+          // Booking page customization - Theme & Colors
+          accent_color: string
+          background_color: string
+          card_background: string
+          text_color: string
+          text_secondary: string
+          // Typography
+          font_family: string
+          font_heading: string
+          // Layout
+          layout_style: 'default' | 'sidebar-left' | 'sidebar-right' | 'compact'
+          card_style: 'bordered' | 'shadow' | 'flat' | 'rounded'
+          button_style: 'rounded' | 'square' | 'pill'
+          // Header
+          show_logo: boolean
+          header_title: string | null
+          header_subtitle: string | null
+          header_alignment: 'left' | 'center'
+          // Steps configuration
+          steps_order: string[]
+          skip_options_step: boolean
+          // Confirmation page
+          confirmation_title: string
+          confirmation_message: string | null
+          confirmation_show_summary: boolean
+          confirmation_cta_text: string | null
+          confirmation_cta_url: string | null
+          // Cover/Banner image
+          cover_image_url: string | null
+          cover_overlay_opacity: number
         }
         Insert: {
           id?: string
@@ -37,6 +67,36 @@ export interface Database {
           slot_duration_minutes?: number
           created_at?: string
           updated_at?: string
+          // Booking page customization - Theme & Colors
+          accent_color?: string
+          background_color?: string
+          card_background?: string
+          text_color?: string
+          text_secondary?: string
+          // Typography
+          font_family?: string
+          font_heading?: string
+          // Layout
+          layout_style?: 'default' | 'sidebar-left' | 'sidebar-right' | 'compact'
+          card_style?: 'bordered' | 'shadow' | 'flat' | 'rounded'
+          button_style?: 'rounded' | 'square' | 'pill'
+          // Header
+          show_logo?: boolean
+          header_title?: string | null
+          header_subtitle?: string | null
+          header_alignment?: 'left' | 'center'
+          // Steps configuration
+          steps_order?: string[]
+          skip_options_step?: boolean
+          // Confirmation page
+          confirmation_title?: string
+          confirmation_message?: string | null
+          confirmation_show_summary?: boolean
+          confirmation_cta_text?: string | null
+          confirmation_cta_url?: string | null
+          // Cover/Banner image
+          cover_image_url?: string | null
+          cover_overlay_opacity?: number
         }
         Update: {
           id?: string
@@ -51,6 +111,36 @@ export interface Database {
           slot_duration_minutes?: number
           created_at?: string
           updated_at?: string
+          // Booking page customization - Theme & Colors
+          accent_color?: string
+          background_color?: string
+          card_background?: string
+          text_color?: string
+          text_secondary?: string
+          // Typography
+          font_family?: string
+          font_heading?: string
+          // Layout
+          layout_style?: 'default' | 'sidebar-left' | 'sidebar-right' | 'compact'
+          card_style?: 'bordered' | 'shadow' | 'flat' | 'rounded'
+          button_style?: 'rounded' | 'square' | 'pill'
+          // Header
+          show_logo?: boolean
+          header_title?: string | null
+          header_subtitle?: string | null
+          header_alignment?: 'left' | 'center'
+          // Steps configuration
+          steps_order?: string[]
+          skip_options_step?: boolean
+          // Confirmation page
+          confirmation_title?: string
+          confirmation_message?: string | null
+          confirmation_show_summary?: boolean
+          confirmation_cta_text?: string | null
+          confirmation_cta_url?: string | null
+          // Cover/Banner image
+          cover_image_url?: string | null
+          cover_overlay_opacity?: number
         }
       }
       categories: {
@@ -154,6 +244,7 @@ export interface Database {
           id: string
           business_id: string
           service_id: string
+          client_id: string | null
           client_name: string
           client_email: string
           client_phone: string | null
@@ -172,6 +263,7 @@ export interface Database {
           id?: string
           business_id: string
           service_id: string
+          client_id?: string | null
           client_name: string
           client_email: string
           client_phone?: string | null
@@ -190,6 +282,7 @@ export interface Database {
           id?: string
           business_id?: string
           service_id?: string
+          client_id?: string | null
           client_name?: string
           client_email?: string
           client_phone?: string | null
@@ -312,6 +405,35 @@ export interface Database {
           created_at?: string
         }
       }
+      clients: {
+        Row: {
+          id: string
+          business_id: string
+          email: string
+          name: string
+          phone: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          business_id: string
+          email: string
+          name: string
+          phone?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          business_id?: string
+          email?: string
+          name?: string
+          phone?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -334,3 +456,11 @@ export type BookingOption = Database['public']['Tables']['booking_options']['Row
 export type BusinessHours = Database['public']['Tables']['business_hours']['Row']
 export type CategoryQuestion = Database['public']['Tables']['category_questions']['Row']
 export type BookingAnswer = Database['public']['Tables']['booking_answers']['Row']
+export type Client = Database['public']['Tables']['clients']['Row']
+
+// Extended types for CRM
+export interface ClientWithStats extends Client {
+  booking_count: number
+  total_spent: number
+  last_booking_date: string | null
+}

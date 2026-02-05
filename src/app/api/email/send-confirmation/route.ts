@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { resend, EMAIL_FROM, isEmailConfigured } from '@/lib/email/client'
-import { BookingConfirmationEmail } from '@/lib/email/templates/booking-confirmation'
-import { BookingNotificationEmail } from '@/lib/email/templates/booking-notification'
+import { bookingConfirmationHtml, bookingNotificationHtml } from '@/lib/email/templates'
 
 // Lazy init to avoid build errors when env vars aren't set
 function getSupabaseAdmin() {
@@ -68,21 +67,23 @@ export async function POST(request: NextRequest) {
     const ownerEmail = userData?.user?.email
 
     // Send confirmation to client
+    const clientEmailHtml = bookingConfirmationHtml({
+      clientName: booking.client_name,
+      businessName: business.name,
+      businessLogo: business.logo_url,
+      serviceName: service.name,
+      date: formattedDate,
+      time: booking.time,
+      duration: booking.duration,
+      totalPrice: booking.total_price,
+      primaryColor: business.primary_color,
+    })
+
     const clientEmailResult = await resend.emails.send({
       from: EMAIL_FROM,
       to: booking.client_email,
       subject: `Confirmation de reservation - ${business.name}`,
-      react: BookingConfirmationEmail({
-        clientName: booking.client_name,
-        businessName: business.name,
-        businessLogo: business.logo_url,
-        serviceName: service.name,
-        date: formattedDate,
-        time: booking.time,
-        duration: booking.duration,
-        totalPrice: booking.total_price,
-        primaryColor: business.primary_color,
-      }),
+      html: clientEmailHtml,
     })
 
     console.log('Client email sent:', clientEmailResult)
@@ -91,22 +92,24 @@ export async function POST(request: NextRequest) {
     if (ownerEmail) {
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
+      const ownerEmailHtml = bookingNotificationHtml({
+        businessName: business.name,
+        clientName: booking.client_name,
+        clientEmail: booking.client_email,
+        clientPhone: booking.client_phone,
+        serviceName: service.name,
+        date: formattedDate,
+        time: booking.time,
+        duration: booking.duration,
+        totalPrice: booking.total_price,
+        dashboardUrl: `${baseUrl}/dashboard`,
+      })
+
       const ownerEmailResult = await resend.emails.send({
         from: EMAIL_FROM,
         to: ownerEmail,
         subject: `Nouvelle reservation - ${booking.client_name}`,
-        react: BookingNotificationEmail({
-          businessName: business.name,
-          clientName: booking.client_name,
-          clientEmail: booking.client_email,
-          clientPhone: booking.client_phone,
-          serviceName: service.name,
-          date: formattedDate,
-          time: booking.time,
-          duration: booking.duration,
-          totalPrice: booking.total_price,
-          dashboardUrl: `${baseUrl}/dashboard`,
-        }),
+        html: ownerEmailHtml,
       })
 
       console.log('Owner email sent:', ownerEmailResult)

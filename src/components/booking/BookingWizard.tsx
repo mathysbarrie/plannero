@@ -3,8 +3,10 @@
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useCallback, useMemo } from 'react'
 import type { Business, Service, Option, BusinessHours, Category, CategoryQuestion } from '@/types/database.types'
+import { type BookingTheme, getCardClasses, getGoogleFontsUrl } from '@/lib/booking-theme'
 import { ProgressBar } from './ProgressBar'
 import { BookingSummary } from './BookingSummary'
+import { BookingHeader } from './BookingHeader'
 import { ServiceStep } from './steps/ServiceStep'
 import { QuestionsStep } from './steps/QuestionsStep'
 import { DateTimeStep } from './steps/DateTimeStep'
@@ -19,6 +21,7 @@ interface BookingWizardProps {
   categoryQuestions: CategoryQuestion[]
   options: Option[]
   businessHours: BusinessHours[]
+  theme: BookingTheme
 }
 
 export interface BookingState {
@@ -37,7 +40,7 @@ export interface BookingState {
 
 const TOTAL_STEPS = 5
 
-export function BookingWizard({ business, services, categories, categoryQuestions, options, businessHours }: BookingWizardProps) {
+export function BookingWizard({ business, services, categories, categoryQuestions, options, businessHours, theme }: BookingWizardProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -234,62 +237,103 @@ export function BookingWizard({ business, services, categories, categoryQuestion
     }
   }
 
+  // Generate Google Fonts URL
+  const fontsUrl = getGoogleFontsUrl([theme.fonts.body, theme.fonts.heading])
+
+  // Get style classes from theme
+  const cardClasses = getCardClasses(theme.cardStyle)
+
+  // Determine layout
+  const isCompact = theme.layout === 'compact'
+  const sidebarLeft = theme.layout === 'sidebar-left'
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          {business.logo_url && (
-            <img
-              src={business.logo_url}
-              alt={business.name}
-              className="w-12 h-12 object-cover rounded-lg"
-            />
+    <>
+      {/* Load Google Fonts */}
+      {fontsUrl && (
+        <link href={fontsUrl} rel="stylesheet" />
+      )}
+
+      <div
+        className={`${isCompact ? 'max-w-2xl' : 'max-w-6xl'} mx-auto px-4 py-6`}
+        style={{
+          ...Object.fromEntries(
+            Object.entries({
+              '--booking-accent': theme.colors.accent,
+              '--booking-background': theme.colors.background,
+              '--booking-card-background': theme.colors.cardBackground,
+              '--booking-text': theme.colors.text,
+              '--booking-text-secondary': theme.colors.textSecondary,
+              '--booking-font-body': theme.fonts.body,
+              '--booking-font-heading': theme.fonts.heading,
+            }).map(([key, value]) => [key, value])
+          ),
+          fontFamily: theme.fonts.body,
+        } as React.CSSProperties}
+      >
+        {/* Header */}
+        <BookingHeader
+          businessName={business.name}
+          logoUrl={business.logo_url}
+          theme={theme}
+        />
+
+        {/* Progress bar */}
+        <div className="mb-8">
+          <ProgressBar currentStep={state.step} totalSteps={TOTAL_STEPS} accentColor={theme.colors.accent} />
+        </div>
+
+        {/* Main content */}
+        <div className={`${isCompact ? '' : 'lg:grid lg:grid-cols-3 lg:gap-8'} ${sidebarLeft ? 'lg:flex lg:flex-row-reverse' : ''}`}>
+          {/* Step content */}
+          <div className={isCompact ? '' : 'lg:col-span-2'}>
+            {state.step > 1 && (
+              <button
+                onClick={goBack}
+                className="flex items-center gap-1 text-sm mb-4 hover:opacity-80"
+                style={{ color: 'var(--booking-text-secondary)' }}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Retour
+              </button>
+            )}
+            {renderStep()}
+          </div>
+
+          {/* Summary sidebar - desktop */}
+          {!isCompact && (
+            <div className={`hidden lg:block ${sidebarLeft ? 'lg:mr-8' : ''}`}>
+              <BookingSummary
+                service={selectedService}
+                date={state.date}
+                time={state.time}
+                options={selectedOptions}
+                total={total}
+                cardClasses={cardClasses}
+                theme={theme}
+              />
+            </div>
           )}
-          <h1 className="text-xl font-semibold text-gray-900">{business.name}</h1>
-        </div>
-        <ProgressBar currentStep={state.step} totalSteps={TOTAL_STEPS} />
-      </div>
-
-      {/* Main content */}
-      <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-        {/* Step content */}
-        <div className="lg:col-span-2">
-          {state.step > 1 && (
-            <button
-              onClick={goBack}
-              className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Retour
-            </button>
-          )}
-          {renderStep()}
         </div>
 
-        {/* Summary sidebar - desktop */}
-        <div className="hidden lg:block">
-          <BookingSummary
-            service={selectedService}
-            date={state.date}
-            time={state.time}
-            options={selectedOptions}
-            total={total}
-          />
-        </div>
-      </div>
-
-      {/* Summary footer - mobile */}
-      {state.step > 1 && (
-        <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-white border-t border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Total</p>
-              <p className="text-xl font-bold text-gray-900">{total.toFixed(2)} EUR</p>
+        {/* Summary footer - mobile */}
+        {state.step > 1 && (
+          <div
+            className="fixed bottom-0 left-0 right-0 lg:hidden border-t p-4"
+            style={{
+              backgroundColor: 'var(--booking-card-background)',
+              borderColor: theme.colors.textSecondary + '20',
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm" style={{ color: 'var(--booking-text-secondary)' }}>Total</p>
+                <p className="text-xl font-bold" style={{ color: 'var(--booking-text)' }}>{total.toFixed(2)} EUR</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   )
 }

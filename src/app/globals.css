@@ -3,11 +3,23 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
+  --background: #FDFDFD;
   --foreground: #171717;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Architectural Clarity - Dot Grid Background */
+.dot-grid-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  z-index: -1;
+  background-image: radial-gradient(#000 0.5px, transparent 0.5px);
+  background-size: 24px 24px;
 }

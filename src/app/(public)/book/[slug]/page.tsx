@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { BookingWizard } from '@/components/booking/BookingWizard'
+import { getThemeFromBusiness } from '@/lib/booking-theme'
 import type { Business, Service, Option, BusinessHours, Category, CategoryQuestion } from '@/types/database.types'
 
 interface PageProps {
@@ -23,6 +24,7 @@ export default async function BookingPage({ params }: PageProps) {
   }
 
   const business = businessData as Business
+  const theme = getThemeFromBusiness(business)
 
   // Fetch active services
   const { data: servicesData } = await supabase
@@ -65,7 +67,10 @@ export default async function BookingPage({ params }: PageProps) {
     .order('day_of_week', { ascending: true })
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: theme.colors.background }}
+    >
       <BookingWizard
         business={business}
         services={(servicesData || []) as Service[]}
@@ -73,6 +78,7 @@ export default async function BookingPage({ params }: PageProps) {
         categoryQuestions={(questionsData || []) as CategoryQuestion[]}
         options={(optionsData || []) as Option[]}
         businessHours={(businessHoursData || []) as BusinessHours[]}
+        theme={theme}
       />
     </div>
   )

@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Copy, Check, ExternalLink, Eye } from 'lucide-react'
+import { Copy, Check, ExternalLink, Eye, Paintbrush } from 'lucide-react'
 import type { Business } from '@/types/database.types'
 
 export default function BookingPageSettings() {
@@ -46,10 +44,10 @@ export default function BookingPageSettings() {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-4xl mx-auto">
+      <div className="max-w-[1200px] mx-auto px-6 pt-10">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
+          <div className="h-6 bg-neutral-200 w-1/3"></div>
+          <div className="h-32 bg-neutral-200"></div>
         </div>
       </div>
     )
@@ -57,92 +55,100 @@ export default function BookingPageSettings() {
 
   if (!business?.slug) {
     return (
-      <div className="p-6 max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Page de réservation</h1>
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-gray-500 mb-4">
-              Configure d&apos;abord ton business dans les paramètres pour obtenir ton lien de réservation.
-            </p>
-            <Button onClick={() => window.location.href = '/dashboard/settings'}>
-              Configurer mon business
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="max-w-[1200px] mx-auto px-6 pt-10">
+        <h1 className="text-2xl font-light tracking-tight text-neutral-900 mb-6">Page de réservation</h1>
+        <div className="border border-neutral-200 bg-white p-12 text-center">
+          <p className="text-[13px] text-neutral-500 mb-4">
+            Configure d&apos;abord ton business dans les paramètres pour obtenir ton lien de réservation.
+          </p>
+          <button
+            onClick={() => window.location.href = '/dashboard/settings'}
+            className="bg-neutral-900 text-white px-4 py-2 text-[11px] font-bold uppercase tracking-wider hover:bg-neutral-800 transition-colors"
+          >
+            Configurer mon business
+          </button>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Page de réservation</h1>
-        <p className="text-gray-500 mt-1">
-          Partage ce lien avec tes clients pour qu&apos;ils puissent réserver.
+    <div className="max-w-[1200px] mx-auto px-6 pt-10 pb-20">
+      {/* Header */}
+      <header className="mb-10">
+        <h1 className="text-2xl font-light tracking-tight text-neutral-900">Page de réservation</h1>
+        <p className="text-[11px] text-neutral-400 mt-1 uppercase tracking-wider">
+          Partage ce lien avec tes clients pour qu&apos;ils puissent réserver
         </p>
-      </div>
+      </header>
 
       {/* Lien de réservation */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-lg">Ton lien de réservation</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <section className="mb-8">
+        <h2 className="text-[11px] uppercase tracking-[0.2em] font-bold text-neutral-400 mb-4">Ton lien de réservation</h2>
+        <div className="border border-neutral-200 bg-white p-6">
           <div className="flex items-center gap-3">
-            <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 font-mono text-sm text-gray-700 truncate">
+            <div className="flex-1 bg-neutral-50 border border-neutral-200 px-4 py-3 font-mono text-[12px] text-neutral-700 truncate">
               {bookingUrl}
             </div>
-            <Button
+            <button
               onClick={copyToClipboard}
-              variant={copied ? 'primary' : 'outline'}
-              className="flex-shrink-0"
+              className={`flex items-center gap-2 px-4 py-2 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                copied
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  : 'bg-neutral-900 text-white hover:bg-neutral-800'
+              }`}
             >
               {copied ? (
                 <>
-                  <Check className="w-4 h-4 mr-2" />
-                  Copié !
+                  <Check className="w-3.5 h-3.5" />
+                  Copié
                 </>
               ) : (
                 <>
-                  <Copy className="w-4 h-4 mr-2" />
+                  <Copy className="w-3.5 h-3.5" />
                   Copier
                 </>
               )}
-            </Button>
+            </button>
           </div>
 
-          <div className="flex gap-3 mt-4">
+          <div className="flex gap-6 mt-4 pt-4 border-t border-neutral-100">
             <a
               href={bookingUrl || '#'}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
+              className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-neutral-900 border-b border-neutral-900 pb-0.5 hover:text-neutral-600 hover:border-neutral-600 transition-colors"
             >
-              <ExternalLink className="w-4 h-4" />
-              Ouvrir dans un nouvel onglet
+              <ExternalLink className="w-3.5 h-3.5" />
+              Ouvrir
+            </a>
+            <a
+              href="/dashboard/booking-page/customize"
+              className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-neutral-400 hover:text-neutral-600 transition-colors"
+            >
+              <Paintbrush className="w-3.5 h-3.5" />
+              Personnaliser
             </a>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
       {/* Aperçu */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Eye className="w-5 h-5" />
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-[11px] uppercase tracking-[0.2em] font-bold text-neutral-400 flex items-center gap-2">
+            <Eye className="w-3.5 h-3.5" />
             Aperçu
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="border-t border-gray-200">
-            <iframe
-              src={bookingUrl || ''}
-              className="w-full h-[600px] rounded-b-xl"
-              title="Aperçu de la page de réservation"
-            />
-          </div>
-        </CardContent>
-      </Card>
+          </h2>
+        </div>
+        <div className="border border-neutral-200 bg-white overflow-hidden">
+          <iframe
+            src={bookingUrl || ''}
+            className="w-full h-[600px]"
+            title="Aperçu de la page de réservation"
+          />
+        </div>
+      </section>
     </div>
   )
 }

@@ -62,12 +62,52 @@ export function ContactStep({
     try {
       const supabase = createClient()
 
+      // Find or create client
+      let clientId: string | null = null
+
+      // Check if client exists
+      const { data: existingClient } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('business_id', business.id)
+        .eq('email', contact.email)
+        .single()
+
+      if (existingClient) {
+        clientId = (existingClient as { id: string }).id
+        // Update client info if needed
+        await supabase
+          .from('clients')
+          .update({
+            name: contact.name,
+            phone: contact.phone || null
+          } as never)
+          .eq('id', clientId)
+      } else {
+        // Create new client
+        const { data: newClient } = await supabase
+          .from('clients')
+          .insert({
+            business_id: business.id,
+            email: contact.email,
+            name: contact.name,
+            phone: contact.phone || null
+          } as never)
+          .select('id')
+          .single()
+
+        if (newClient) {
+          clientId = (newClient as { id: string }).id
+        }
+      }
+
       // Create booking
       const { data: booking, error: bookingError } = await supabase
         .from('bookings')
         .insert({
           business_id: business.id,
           service_id: selectedService.id,
+          client_id: clientId,
           client_name: contact.name,
           client_email: contact.email,
           client_phone: contact.phone || null,
@@ -142,33 +182,33 @@ export function ContactStep({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-2">
-        Vos coordonnées
+      <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-400 mb-2">
+        Coordonnées
       </h2>
-      <p className="text-gray-500 mb-6">
+      <p className="text-[13px] text-neutral-500 mb-6">
         Entrez vos informations pour finaliser la réservation
       </p>
 
       {/* Recap card */}
-      <div className="bg-blue-50 rounded-xl p-4 mb-6">
+      <div className="bg-neutral-50 border border-neutral-200 p-4 mb-6">
         <div className="flex items-start gap-3">
-          <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+          <CheckCircle className="w-4 h-4 text-neutral-900 mt-0.5" />
           <div className="flex-1">
-            <p className="font-medium text-gray-900">{selectedService?.name}</p>
+            <p className="text-[13px] font-medium text-neutral-900">{selectedService?.name}</p>
             {selectedDate && selectedTime && (
-              <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
+              <div className="flex items-center gap-4 mt-1 text-[11px] text-neutral-500">
                 <span className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
+                  <Calendar className="w-3.5 h-3.5" />
                   <span className="capitalize">{formatDate(selectedDate)}</span>
                 </span>
                 <span className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
+                  <Clock className="w-3.5 h-3.5" />
                   {selectedTime}
                 </span>
               </div>
             )}
           </div>
-          <p className="font-semibold text-gray-900">{total.toFixed(2)} €</p>
+          <p className="text-[13px] font-medium text-neutral-900 tabular-nums">{total.toFixed(2)} €</p>
         </div>
       </div>
 
@@ -199,7 +239,7 @@ export function ContactStep({
         />
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-3 bg-amber-50 border border-amber-200 text-amber-700 text-[12px]">
             {error}
           </div>
         )}
@@ -214,7 +254,7 @@ export function ContactStep({
           >
             Confirmer la réservation
           </Button>
-          <p className="text-xs text-gray-500 text-center mt-3">
+          <p className="text-[10px] text-neutral-400 text-center mt-3 uppercase tracking-wider">
             En confirmant, vous acceptez de recevoir des communications relatives à votre réservation.
           </p>
         </div>
